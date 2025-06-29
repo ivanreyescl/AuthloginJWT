@@ -4,6 +4,8 @@ import { useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ENDPOINT } from '../config/constans'
 
+
+console.log(window.sessionStorage.getItem('token'))
 const Profile = () => {
   const navigate = useNavigate()
   const { getDeveloper, setDeveloper } = useContext(Context)
@@ -11,7 +13,10 @@ const Profile = () => {
   const getDeveloperData = () => {
     const token = window.sessionStorage.getItem('token')
     axios.get(ENDPOINT.users, { headers: { Authorization: `Bearer ${token}` } })
-      .then(({ data: [user] }) => setDeveloper({ ...user }))
+      .then(({ data }) => {
+        console.log('respuesta:', data) 
+        setDeveloper({...data.user })
+      })
       .catch(({ response: { data } }) => {
         console.error(data)
         window.sessionStorage.removeItem('token')

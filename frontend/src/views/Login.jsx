@@ -34,7 +34,7 @@ const Login = () => {
       })
       .catch(({ response: { data } }) => {
         console.error(data)
-        window.alert(`${data.message} 🙁.`)
+        window.alert(`${data.error} 🙁.`)
       })
   }
 
