@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { createUserModel, loginUserModel, getUsersModel, getUserByIdModel} from '../models/userModel.js'
+import { createUserModel, loginUserModel, getUserByEmailModel} from '../models/userModel.js'
 import jwt from 'jsonwebtoken';
 
 export const createUser = async (req, res) => {
@@ -23,14 +23,14 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ error: 'Email y password son obligatorios' });
         }
         const user = await loginUserModel(email, password);
-        if (!user) {
-            return res.status(401).json({ error: 'Credenciales incorrectas o usuario no existe' });
+        if (user == null) {
+            return res.status(401).json({ error: 'Usuario no existe' });
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ error: 'Credenciales incorrectas' });
         }
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ message: 'Usuario autenticado exitosamente', token });
     } catch (error) {
         console.error(error);
@@ -40,20 +40,21 @@ export const loginUser = async (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
-        console.log('getUser called');
-        const { id } = req.params;
-        let user;
-        if (id) {
-            console.log('id presente:', id);
-            user = await getUserByIdModel(id);
-            if (!user) {
-                return res.status(404).json({ error: 'Usuario no encontrado' });
-            }
-        } else {
-            console.log('id no presente, obteniendo todos los usuarios');
-            user = await getUsersModel();
+        const { email } = req.user;
+        const user = await getUserByEmailModel(email);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        res.status(200).json({ user });
+
+        res.status(200).json({
+            user: {
+                email: user.email,
+                rol: user.rol,
+                lenguage: user.lenguage,
+                name: user.name
+            }
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al obtener el usuario' });

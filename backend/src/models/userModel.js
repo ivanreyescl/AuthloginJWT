@@ -12,27 +12,24 @@ export const createUserModel = async (email, password, rol, lenguage) => {
     return response.rows[0];
 }
 
-export const findUserByEmailModel = async (email) => {
+export const loginUserModel = async (email, password) => {
     const sql = format('SELECT * FROM usuarios WHERE email = %L', email);
     const response = await pool.query(sql);
-    return response.rows[0] || null;
-};
-
-export const authenticateUserModel = async (user, password) => {
-    if (!user) return false;
-    const isMatch = await bcrypt.compare(password, user.password);
-    return isMatch;
-};
+    const user = response.rows[0];
+    if (!user) {
+        return null;
+    }
+    return user;
+}
 
 export const getUsersModel = async () => {
-    console.log('llega la modelo')
     const sql = format('SELECT * FROM usuarios;');
     const response = await pool.query(sql);
     return response.rows;
-}   
+}
 
-export const getUserByIdModel = async (id) => {
-    const sql = format('SELECT * FROM usuarios WHERE id = %L', id);
+export const getUserByEmailModel = async (email) => {
+    const sql = format('SELECT * FROM usuarios WHERE email = %L', email);
     const response = await pool.query(sql);
     return response.rows[0];
 }
